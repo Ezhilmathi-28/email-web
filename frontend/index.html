@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Mail — Smart Emails. Faster You.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">✉</div>
+      <div>
+        <h1>AI Mail <span>✦</span></h1>
+        <small>Smarter emails. Faster you.</small>
+      </div>
+    </div>
+
+    <button class="compose" id="composeBtn">＋ &nbsp; Compose</button>
+
+    <nav id="sidebarNav">
+      <button class="nav active" data-view="inbox">
+        ▣ <span>Inbox</span><b id="inboxCountBadge">0</b>
+      </button>
+      <button class="nav" data-view="sent">
+        ➤ <span>Sent</span><b id="sentCountBadge">0</b>
+      </button>
+      <button class="nav" data-view="starred">
+        ☆ <span>Starred</span><b id="starredCountBadge">0</b>
+      </button>
+      <button class="nav" data-view="trash">
+        ⌫ <span>Trash</span>
+      </button>
+    </nav>
+
+    <div class="label-head">Labels <span>＋</span></div>
+    <div class="labels">
+      <div data-label="Work">🔵 Work <b>5</b></div>
+      <div data-label="Personal">🟡 Personal <b>3</b></div>
+      <div data-label="Important">🟠 Important <b>2</b></div>
+      <div data-label="Social">🔷 Social <b>1</b></div>
+    </div>
+
+    <div class="copilot">
+      <div class="robot">🤖</div>
+      <h3>Your AI Copilot</h3>
+      <p>Ask, search, compose and let AI control the UI!</p>
+      <button id="tryAi">Try AI ✦</button>
+    </div>
+  </aside>
+
+  <!-- MAIN WORKSPACE -->
+  <main>
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="search">
+        <span>⌕</span>
+        <input id="search" placeholder="Search emails, people, or ask AI..." autocomplete="off">
+        <kbd>⌘K</kbd>
+      </div>
+
+      <div class="top">
+        <!-- Auth / Connection Status -->
+        <div id="authContainer">
+          <span class="connected" id="authBadge">
+            <span class="status-indicator"></span>
+            <span id="userEmailText">Checking Gmail...</span>
+          </span>
+          <button id="logoutBtn" class="icon-btn hidden" title="Disconnect Google Account">⏏</button>
+        </div>
+
+        <button id="sync" class="icon-btn" title="Sync Mailbox (Real-Time Sync Active)">↻</button>
+        <button id="theme" class="icon-btn" title="Toggle Light/Dark Theme">☾</button>
+        <div class="avatar" id="userAvatar">U</div>
+      </div>
+    </header>
+
+    <!-- 3-COLUMN WORKSPACE: MAILBOX | READER | AI COPILOT -->
+    <section class="workspace">
+      <!-- 1. MAILBOX COLUMN -->
+      <div class="mailbox">
+        <div class="heading">
+          <div>
+            <h2 id="viewHeading">Inbox <small id="headingCount">(0)</small></h2>
+            <p id="syncText">⚡ Real-time sync active</p>
+          </div>
+          <button id="filterBtn">☷ Filter⌄</button>
+        </div>
+
+        <div class="chips">
+          <button class="chip active" data-chip="all">All</button>
+          <button class="chip" data-chip="unread">Unread</button>
+          <button class="chip" data-chip="starred">Starred</button>
+        </div>
+
+        <!-- Filter Drawer -->
+        <div class="filters hidden" id="filters">
+          <input id="filterSender" placeholder="Filter by Sender">
+          <input id="filterKeyword" placeholder="Filter by Keyword">
+          <select id="filterRead">
+            <option value="all">All mail</option>
+            <option value="unread">Unread only</option>
+            <option value="read">Read only</option>
+          </select>
+          <select id="filterDate">
+            <option value="any">Any date</option>
+            <option value="today">Today</option>
+            <option value="week">Last 7 days</option>
+            <option value="month">Last 30 days</option>
+          </select>
+          <div class="filter-actions">
+            <button id="resetFilters" class="btn-secondary">Reset</button>
+            <button id="applyFilters" class="btn-primary">Apply Filters</button>
+          </div>
+        </div>
+
+        <!-- Email List -->
+        <div id="emailList" class="email-list-container">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading messages...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. READER COLUMN -->
+      <div class="reader" id="reader">
+        <div class="empty" id="readerEmpty">
+          <div>✉</div>
+          <h3>Select an email</h3>
+          <p>Choose a message to read it here or tell AI to open one.</p>
+        </div>
+
+        <div class="detail hidden" id="readerDetail">
+          <div class="detailtop">
+            <div class="detail-title-group">
+              <h2 id="detailSubject">(No subject)</h2>
+              <button id="detailStarBtn" class="star-btn" title="Toggle Star">☆</button>
+            </div>
+            <div class="detail-top-actions">
+              <button id="detailReplyTopBtn" title="Reply">↩ Reply</button>
+            </div>
+          </div>
+
+          <div class="sender">
+            <div class="bigavatar" id="detailAvatar">U</div>
+            <div class="sender-info">
+              <strong id="detailSender">Sender Name</strong>
+              <p id="detailMeta">sender@example.com · to me · Date</p>
+            </div>
+          </div>
+
+          <!-- AI Action Bar inside Reader -->
+          <div class="reader-ai-bar">
+            <button id="btnAiSummarize" class="ai-pill-btn">✨ Summarize with AI</button>
+            <button id="btnAiSuggest" class="ai-pill-btn">💡 Suggest Replies</button>
+          </div>
+
+          <!-- Formatted Email Body -->
+          <div class="body" id="detailBody">Email body content...</div>
+
+          <!-- Reader Bottom Action Bar -->
+          <div class="reply">
+            <button id="detailReplyBtn">↩ Reply</button>
+            <button id="detailForwardBtn">↪ Forward</button>
+            <button id="detailTrashBtn" class="btn-danger">🗑 Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. AI ASSISTANT COLUMN (THE CORE EVALUATION AREA) -->
+      <aside class="ai" id="ai">
+        <div class="aihead">
+          <div class="aiidentity">
+            <div class="mini">🤖</div>
+            <div>
+              <h3>AI Copilot</h3>
+              <p><i class="status-online"></i> Online · UI Driving</p>
+            </div>
+          </div>
+          <button id="closeAi" title="Close AI Panel">×</button>
+        </div>
+
+        <p class="intro">
+          I don't just chat — I control the UI. Try asking me to compose, filter, search, open an email, or reply!
+        </p>
+
+        <!-- Quick AI Command Chips -->
+        <div class="quick">
+          <button data-ai="Send an email to john@example.com with subject 'Meeting Tomorrow' and body 'Let’s meet at 3pm'">✉ Compose to John</button>
+          <button data-ai="Show me emails from the last 10 days">📅 Last 10 days</button>
+          <button data-ai="Show only unread emails from this week">📌 Unread this week</button>
+          <button data-ai="Open the latest email">📂 Open latest email</button>
+        </div>
+
+        <!-- Chat Stream -->
+        <div class="chat" id="chat">
+          <div class="ai-msg">
+            <span>🤖</span>
+            <div class="ai-bubble">
+              <div class="ai-text">
+                Hi! I'm your AI Copilot. I can compose emails with live typing, filter your inbox, navigate views, and draft replies. What would you like to do? ✨
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="aiinput">
+          <input id="aiInput" placeholder="Tell AI to compose, search, filter, open..." autocomplete="off">
+          <button id="ask" title="Send command">➤</button>
+        </div>
+        <small class="powered">✦ Powered by Gemini AI · Programmatic UI Control</small>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<!-- COMPOSE MODAL -->
+<div class="modal hidden" id="modal">
+  <div class="composebox">
+    <div class="composehead">
+      <b id="composeModalTitle">New Message</b>
+      <span>
+        <button id="closeCompose" title="Close">×</button>
+      </span>
+    </div>
+    <input id="to" placeholder="To (e.g. john@example.com)" autocomplete="off">
+    <input id="subject" placeholder="Subject" autocomplete="off">
+    <textarea id="body" placeholder="Write your message or let AI generate it..."></textarea>
+    <div class="composefoot">
+      <div class="compose-tools">
+        <button id="btnAiDraft" class="tool-btn" title="AI Polish / Rephrase">✨ AI Draft</button>
+      </div>
+      <div class="compose-actions">
+        <button id="discardCompose" class="btn-secondary">Discard</button>
+        <button id="send" class="btn-primary">Send ➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOOGLE OAUTH CONNECT MODAL (Displays when Gmail is not connected) -->
+<div class="modal hidden" id="authModal">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="logo-large">✉</div>
+      <h2>Connect Your Gmail</h2>
+      <p>Connect your Google Account to send, receive, and manage real emails with AI assistance.</p>
+    </div>
+    <div class="auth-body">
+      <a href="/auth/google" class="google-login-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Sign in with Google
+      </a>
+      <button id="closeAuthModal" class="btn-text">Continue in Preview / Demo Mode</button>
+    </div>
+    <div class="auth-footer">
+      <small>🔒 Secure OAuth 2.0 · Credentials stay on your local machine.</small>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast hidden" id="toast">
+  <strong id="toastIcon">✓</strong>
+  <div>
+    <b id="toastTitle">Success</b>
+    <small id="toastText">Action completed successfully.</small>
+  </div>
+  <button id="toastClose">×</button>
+</div>
+
+<!-- JAVASCRIPT MODULES -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
